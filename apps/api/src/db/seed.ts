@@ -24,6 +24,7 @@ const CRITERIA: Array<{
   category: CriterionCategory
   text: string
   context?: string
+  minimumValue?: number
   order: number
 }> = [
   // 1A
