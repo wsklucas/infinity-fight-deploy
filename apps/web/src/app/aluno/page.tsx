@@ -83,7 +83,7 @@ export default function StudentDashboard() {
           <div className="text-[9px] text-text-muted tracking-wider mt-0.5">TREINOS NO MÊS</div>
         </div>
         <div className="bg-surface-card border border-surface-border rounded-xl p-3">
-          <div className="text-lg font-medium text-state-mastered">{streak || s?.currentStreak ?? 0}</div>
+          <div className="text-lg font-medium text-state-mastered">{streak || (s?.currentStreak ?? 0)}</div>
           <div className="text-[9px] text-text-muted tracking-wider mt-0.5">DIAS SEGUIDOS</div>
         </div>
       </div>
