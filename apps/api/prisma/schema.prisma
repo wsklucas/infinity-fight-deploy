@@ -9,37 +9,37 @@ datasource db {
 }
 
 model Academy {
-  id         String   @id @default(uuid())
-  name       String
-  slug       String   @unique
-  plan       Plan     @default(FREE)
-  active     Boolean  @default(true)
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
-
-  users User[]
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  plan      Plan     @default(FREE)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  users   User[]
+  lessons Lesson[]
 
   @@map("academies")
 }
 
 model User {
-  id        String   @id @default(uuid())
-  academyId String   @map("academy_id")
-  name      String
-  email     String   @unique
-  password  String
-  role      Role
-  avatarUrl String?  @map("avatar_url")
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  academy            Academy      @relation(fields: [academyId], references: [id])
-  student            Student?
-  instructorStudents Student[]    @relation("InstructorStudents")
-  evaluations        Evaluation[] @relation("InstructorEvaluations")
-  feedbacks          Feedback[]   @relation("InstructorFeedbacks")
+  id                 String         @id @default(uuid())
+  academyId          String         @map("academy_id")
+  name               String
+  email              String         @unique
+  password           String
+  role               Role
+  avatarUrl          String?        @map("avatar_url")
+  active             Boolean        @default(true)
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  evaluations        Evaluation[]   @relation("InstructorEvaluations")
+  feedbacks          Feedback[]     @relation("InstructorFeedbacks")
   refreshTokens      RefreshToken[]
+  instructorStudents Student[]      @relation("InstructorStudents")
+  student            Student?
+  academy            Academy        @relation(fields: [academyId], references: [id])
+  instructorLessons  Lesson[]       @relation("InstructorLessons")
 
   @@map("users")
 }
@@ -50,42 +50,40 @@ model RefreshToken {
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
 }
 
 model Student {
-  id              String   @id @default(uuid())
-  userId          String   @unique @map("user_id")
-  instructorId    String   @map("instructor_id")
-  currentSublevel String   @default("1A") @map("current_sublevel")
-  intakeSublevel  String?  @map("intake_sublevel")
-  intakeDate      DateTime? @map("intake_date")
-  styleTags       String[] @map("style_tags")
-  trainingDays    Int      @default(0) @map("training_days")
-  currentStreak   Int      @default(0) @map("current_streak")
-  maxStreak       Int      @default(0) @map("max_streak")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
-
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  instructor  User         @relation("InstructorStudents", fields: [instructorId], references: [id])
-  evaluations Evaluation[]
-  checkins    Checkin[]
-  feedbacks   Feedback[]
+  id              String       @id @default(uuid())
+  userId          String       @unique @map("user_id")
+  instructorId    String       @map("instructor_id")
+  currentSublevel String       @default("1A") @map("current_sublevel")
+  intakeSublevel  String?      @map("intake_sublevel")
+  intakeDate      DateTime?    @map("intake_date")
+  styleTags       String[]     @map("style_tags")
+  trainingDays    Int          @default(0) @map("training_days")
+  currentStreak   Int          @default(0) @map("current_streak")
+  maxStreak       Int          @default(0) @map("max_streak")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  checkins        Checkin[]
+  evaluations     Evaluation[]
+  feedbacks       Feedback[]
+  instructor      User            @relation("InstructorStudents", fields: [instructorId], references: [id])
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonStudents  LessonStudent[]
 
   @@map("students")
 }
 
 model Sublevel {
-  id          String @id
+  id          String       @id
   level       Int
   label       String
   description String
   order       Int
-
   criteria    Criterion[]
   evaluations Evaluation[]
 
@@ -93,51 +91,48 @@ model Sublevel {
 }
 
 model Criterion {
-  id           String           @id @default(uuid())
-  sublevelId   String           @map("sublevel_id")
-  type         CriterionType
-  category     CriterionCategory
-  text         String
-  context      String?
-  minimumValue Int?             @map("minimum_value")
-  order        Int
-
-  sublevel         Sublevel          @relation(fields: [sublevelId], references: [id])
-  evaluationItems  EvaluationItem[]
+  id              String            @id @default(uuid())
+  sublevelId      String            @map("sublevel_id")
+  type            CriterionType
+  category        CriterionCategory
+  text            String
+  context         String?
+  minimumValue    Int?              @map("minimum_value")
+  order           Int
+  sublevel        Sublevel          @relation(fields: [sublevelId], references: [id])
+  evaluationItems EvaluationItem[]
 
   @@map("criteria")
 }
 
 model Evaluation {
-  id           String           @id @default(uuid())
-  studentId    String           @map("student_id")
-  instructorId String           @map("instructor_id")
-  sublevelId   String           @map("sublevel_id")
+  id           String            @id @default(uuid())
+  studentId    String            @map("student_id")
+  instructorId String            @map("instructor_id")
+  sublevelId   String            @map("sublevel_id")
   type         EvaluationType
-  status       EvaluationStatus @default(IN_PROGRESS)
+  status       EvaluationStatus  @default(IN_PROGRESS)
   result       EvaluationResult?
   notes        String?
-  evaluatedAt  DateTime         @default(now()) @map("evaluated_at")
-  createdAt    DateTime         @default(now()) @map("created_at")
-  updatedAt    DateTime         @updatedAt @map("updated_at")
-
-  student    Student          @relation(fields: [studentId], references: [id])
-  instructor User             @relation("InstructorEvaluations", fields: [instructorId], references: [id])
-  sublevel   Sublevel         @relation(fields: [sublevelId], references: [id])
-  items      EvaluationItem[]
+  evaluatedAt  DateTime          @default(now()) @map("evaluated_at")
+  createdAt    DateTime          @default(now()) @map("created_at")
+  updatedAt    DateTime          @updatedAt @map("updated_at")
+  items        EvaluationItem[]
+  instructor   User              @relation("InstructorEvaluations", fields: [instructorId], references: [id])
+  student      Student           @relation(fields: [studentId], references: [id])
+  sublevel     Sublevel          @relation(fields: [sublevelId], references: [id])
 
   @@map("evaluations")
 }
 
 model EvaluationItem {
-  id              String       @id @default(uuid())
-  evaluationId    String       @map("evaluation_id")
-  criterionId     String       @map("criterion_id")
-  state           CriterionState
-  observedValue   Int?         @map("observed_value")
-
-  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
-  criterion  Criterion  @relation(fields: [criterionId], references: [id])
+  id            String         @id @default(uuid())
+  evaluationId  String         @map("evaluation_id")
+  criterionId   String         @map("criterion_id")
+  state         CriterionState
+  observedValue Int?           @map("observed_value")
+  criterion     Criterion      @relation(fields: [criterionId], references: [id])
+  evaluation    Evaluation     @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
 
   @@unique([evaluationId, criterionId])
   @@map("evaluation_items")
@@ -148,8 +143,7 @@ model Checkin {
   studentId String   @map("student_id")
   date      DateTime @db.Date
   createdAt DateTime @default(now()) @map("created_at")
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([studentId, date])
   @@map("checkins")
@@ -162,9 +156,8 @@ model Feedback {
   text         String
   readAt       DateTime? @map("read_at")
   createdAt    DateTime  @default(now()) @map("created_at")
-
-  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  instructor User    @relation("InstructorFeedbacks", fields: [instructorId], references: [id])
+  instructor   User      @relation("InstructorFeedbacks", fields: [instructorId], references: [id])
+  student      Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@map("feedbacks")
 }
@@ -212,4 +205,45 @@ enum EvaluationResult {
   ADVANCED
   MAINTAINED
   INTAKE_PLACED
+}
+
+enum LessonType {
+  INDIVIDUAL
+  GROUP
+}
+
+enum LessonStatus {
+  CONFIRMED
+  PENDING
+  CANCELLED
+}
+
+model Lesson {
+  id              String       @id @default(uuid())
+  academyId       String       @map("academy_id")
+  instructorId    String       @map("instructor_id")
+  title           String
+  type            LessonType
+  date            DateTime     @db.Date
+  time            String
+  durationMinutes Int          @default(60) @map("duration_minutes")
+  status          LessonStatus @default(PENDING)
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  academy    Academy         @relation(fields: [academyId], references: [id])
+  instructor User            @relation("InstructorLessons", fields: [instructorId], references: [id])
+  students   LessonStudent[]
+
+  @@map("lessons")
+}
+
+model LessonStudent {
+  lessonId  String @map("lesson_id")
+  studentId String @map("student_id")
+
+  lesson  Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([lessonId, studentId])
+  @@map("lesson_students")
 }

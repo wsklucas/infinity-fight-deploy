@@ -83,6 +83,18 @@ export const sendFeedback = (student_id: string, text: string) =>
 export const getFeedbacks = (studentId: string) =>
   api.get(`/feedbacks/student/${studentId}`).then(r => r.data)
 
+// Lessons
+export const getLessons = (params?: { from?: string; to?: string }) =>
+  api.get('/lessons', { params }).then(r => r.data)
+export const createLesson = (data: { title: string; type: string; date: string; time: string; duration_minutes?: number; student_ids?: string[] }) =>
+  api.post('/lessons', data).then(r => r.data)
+export const updateLessonStudents = (id: string, student_ids: string[], action: 'add' | 'remove') =>
+  api.patch(`/lessons/${id}/students`, { student_ids, action }).then(r => r.data)
+export const updateLessonStatus = (id: string, status: string) =>
+  api.patch(`/lessons/${id}/status`, { status }).then(r => r.data)
+export const deleteLesson = (id: string) =>
+  api.delete(`/lessons/${id}`).then(r => r.data)
+
 // Instructors
 export const createInstructor = (data: { name: string; email: string; password: string }) =>
   api.post('/instructors', data).then(r => r.data)
