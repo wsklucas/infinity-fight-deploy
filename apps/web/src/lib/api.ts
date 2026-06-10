@@ -80,6 +80,10 @@ export const sendFeedback = (student_id: string, text: string) =>
 export const getFeedbacks = (studentId: string) =>
   api.get(`/feedbacks/student/${studentId}`).then(r => r.data)
 
+// Instructors
+export const createInstructor = (data: { name: string; email: string; password: string }) =>
+  api.post('/instructors', data).then(r => r.data)
+
 // Sublevels
 export const getSublevels = () => api.get('/sublevels').then(r => r.data)
 export const getSublevel = (id: string) => api.get(`/sublevels/${id}`).then(r => r.data)

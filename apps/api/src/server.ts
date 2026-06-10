@@ -5,6 +5,7 @@ import { PrismaClient } from '@prisma/client'
 
 import authRoutes from './routes/auth'
 import studentRoutes from './routes/students'
+import instructorRoutes from './routes/instructors'
 import evaluationRoutes from './routes/evaluations'
 import progressRoutes from './routes/progress'
 import checkinRoutes from './routes/checkins'
@@ -45,6 +46,7 @@ server.decorate('authenticateInstructor', async (request: any, reply: any) => {
 
 server.register(authRoutes, { prefix: '/api/v1/auth' })
 server.register(studentRoutes, { prefix: '/api/v1/students' })
+server.register(instructorRoutes, { prefix: '/api/v1/instructors' })
 server.register(evaluationRoutes, { prefix: '/api/v1/evaluations' })
 server.register(progressRoutes, { prefix: '/api/v1/progress' })
 server.register(checkinRoutes, { prefix: '/api/v1/checkins' })
