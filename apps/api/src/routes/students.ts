@@ -14,9 +14,11 @@ export default async function studentRoutes(fastify: FastifyInstance) {
       where: {
         instructor: { academyId: user.academyId },
         ...(sublevel ? { currentSublevel: sublevel } : {}),
+        ...(status === 'active' ? { user: { active: true } } : {}),
+        ...(status === 'inactive' ? { user: { active: false } } : {}),
       },
       include: {
-        user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        user: { select: { id: true, name: true, email: true, avatarUrl: true, active: true } },
         feedbacks: { orderBy: { createdAt: 'desc' }, take: 1 },
       },
       orderBy: { updatedAt: 'desc' },
@@ -32,7 +34,7 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     const student = await prisma.student.findUnique({
       where: { id },
       include: {
-        user: { select: { id: true, name: true, email: true, avatarUrl: true } },
+        user: { select: { id: true, name: true, email: true, avatarUrl: true, active: true } },
         instructor: { select: { id: true, name: true } },
         feedbacks: { orderBy: { createdAt: 'desc' }, take: 5 },
         checkins: { orderBy: { date: 'desc' }, take: 30 },
@@ -82,6 +84,19 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     })
 
     return reply.status(201).send({ student, temp_password: tmpPassword })
+  })
+
+  fastify.patch('/:id/status', { onRequest: [authenticateInstructor] }, async (request, reply) => {
+    const { id } = request.params as any
+    const schema = z.object({ active: z.boolean() })
+    const { active } = schema.parse(request.body)
+
+    const student = await prisma.student.findUnique({ where: { id } })
+    if (!student) return reply.status(404).send({ error: 'Student not found' })
+
+    await prisma.user.update({ where: { id: student.userId }, data: { active } })
+
+    return { ok: true, active }
   })
 
   fastify.patch('/:id', { onRequest: [authenticateInstructor] }, async (request, reply) => {

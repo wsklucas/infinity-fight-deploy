@@ -44,12 +44,15 @@ export const logout = (refresh_token: string) =>
   api.post('/auth/logout', { refresh_token })
 
 // Students
-export const getStudents = () => api.get('/students').then(r => r.data)
+export const getStudents = (status?: 'active' | 'inactive') =>
+  api.get('/students', { params: status ? { status } : undefined }).then(r => r.data)
 export const getStudent = (id: string) => api.get(`/students/${id}`).then(r => r.data)
 export const createStudent = (data: { name: string; email: string }) =>
   api.post('/students', data).then(r => r.data)
 export const updateStudent = (id: string, data: any) =>
   api.patch(`/students/${id}`, data).then(r => r.data)
+export const updateStudentStatus = (id: string, active: boolean) =>
+  api.patch(`/students/${id}/status`, { active }).then(r => r.data)
 
 // Evaluations
 export const createEvaluation = (data: { student_id: string; sublevel_id: string; type: string }) =>

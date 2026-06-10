@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getStudent, getCurrentProgress, sendFeedback } from '../../../../lib/api'
+import { getStudent, getCurrentProgress, sendFeedback, updateStudentStatus } from '../../../../lib/api'
 
 export default function StudentProfile({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -10,11 +10,24 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
   const [progress, setProgress] = useState<any>(null)
   const [feedback, setFeedback] = useState('')
   const [sending, setSending] = useState(false)
+  const [togglingStatus, setTogglingStatus] = useState(false)
 
   useEffect(() => {
     getStudent(params.id).then(d => setStudent(d))
     getCurrentProgress(params.id).then(d => setProgress(d))
   }, [params.id])
+
+  const handleToggleStatus = async () => {
+    const isActive = s.user.active !== false
+    const msg = isActive
+      ? `Inativar ${s.user.name}? O aluno não aparecerá na lista principal.`
+      : `Reativar ${s.user.name}?`
+    if (!window.confirm(msg)) return
+    setTogglingStatus(true)
+    await updateStudentStatus(params.id, !isActive)
+    await getStudent(params.id).then(d => setStudent(d))
+    setTogglingStatus(false)
+  }
 
   const handleFeedback = async () => {
     if (!feedback.trim()) return
@@ -40,7 +53,12 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
             {s.user.name.split(' ').map((n: string) => n[0]).slice(0, 2).join('')}
           </div>
           <div>
-            <div className="font-medium">{s.user.name}</div>
+            <div className="flex items-center gap-2">
+              <div className="font-medium">{s.user.name}</div>
+              {s.user.active === false && (
+                <span className="text-[9px] font-medium px-2 py-0.5 rounded-sm tracking-wider bg-brand-red-dim text-brand-red border border-brand-red-border">INATIVO</span>
+              )}
+            </div>
             <div className="text-xs text-text-muted">{s.trainingDays} treinos · desde {new Date(s.createdAt ?? Date.now()).toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' })}</div>
             <div className="flex gap-1 mt-1 flex-wrap">
               {s.styleTags?.map((tag: string) => (
@@ -97,7 +115,7 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
         </div>
       )}
 
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-3">
         <Link href={`/instrutor/avaliar?student=${params.id}&sublevel=${s.currentSublevel}`} className="flex-1 bg-brand-red text-white text-xs font-medium py-2.5 rounded-lg text-center">
           Avaliar agora
         </Link>
@@ -105,6 +123,18 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
           Ver histórico
         </button>
       </div>
+
+      <button
+        onClick={handleToggleStatus}
+        disabled={togglingStatus}
+        className={`w-full text-xs font-medium py-2.5 rounded-lg mb-5 transition-colors disabled:opacity-50 ${
+          s.user.active === false
+            ? 'bg-state-mastered-bg border border-state-mastered-border text-state-mastered hover:opacity-80'
+            : 'bg-surface-card border border-surface-border text-brand-red hover:bg-brand-red-dim'
+        }`}
+      >
+        {togglingStatus ? 'Aguarde...' : s.user.active === false ? 'Reativar aluno' : 'Inativar aluno'}
+      </button>
 
       {student.last_feedback && (
         <div className="bg-state-mastered-bg border border-state-mastered-border rounded-xl p-3.5 mb-4">

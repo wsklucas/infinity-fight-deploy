@@ -8,17 +8,19 @@ interface Student {
   currentSublevel: string
   currentStreak: number
   styleTags: string[]
-  user: { name: string; email: string }
+  user: { name: string; email: string; active: boolean }
 }
 
 export default function InstructorHome() {
   const [students, setStudents] = useState<Student[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [tab, setTab] = useState<'active' | 'inactive'>('active')
 
   useEffect(() => {
-    getStudents().then(d => { setStudents(d.students); setLoading(false) })
-  }, [])
+    setLoading(true)
+    getStudents(tab).then(d => { setStudents(d.students); setLoading(false) })
+  }, [tab])
 
   const filtered = students.filter(s =>
     s.user.name.toLowerCase().includes(search.toLowerCase())
@@ -27,13 +29,27 @@ export default function InstructorHome() {
   const needsAttention = filtered.filter(s => s.currentStreak === 0)
   const onTrack = filtered.filter(s => s.currentStreak > 0)
 
-  if (loading) return <div className="text-text-muted text-sm">Carregando...</div>
-
   return (
     <div>
       <div className="text-[9px] tracking-widest text-brand-red mb-1">VISÃO GERAL</div>
       <div className="text-xl font-medium mb-1">Seus alunos</div>
-      <div className="text-xs text-text-muted mb-5">{students.length} ativos</div>
+      <div className="text-xs text-text-muted mb-4">{students.length} {tab === 'active' ? 'ativos' : 'inativos'}</div>
+
+      <div className="flex border border-surface-border rounded-lg overflow-hidden mb-4">
+        {(['active', 'inactive'] as const).map(t => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`flex-1 py-2 text-xs font-medium transition-colors ${
+              tab === t
+                ? 'bg-brand-red text-white'
+                : 'bg-surface-card text-text-muted hover:text-text-secondary'
+            }`}
+          >
+            {t === 'active' ? 'Ativos' : 'Inativos'}
+          </button>
+        ))}
+      </div>
 
       <input
         value={search}
@@ -42,22 +58,38 @@ export default function InstructorHome() {
         className="w-full bg-surface-card border-l-2 border-l-brand-red border border-surface-border rounded-r-lg px-3 py-2 text-sm mb-5 focus:outline-none"
       />
 
-      {needsAttention.length > 0 && (
-        <div className="mb-5">
-          <SectionHead label="ATENÇÃO" />
+      {loading ? (
+        <div className="text-text-muted text-sm">Carregando...</div>
+      ) : tab === 'inactive' ? (
+        filtered.length === 0 ? (
+          <div className="text-text-muted text-sm">Nenhum aluno inativo.</div>
+        ) : (
           <div className="space-y-2">
-            {needsAttention.map(s => <StudentCard key={s.id} student={s} urgent />)}
+            {filtered.map(s => <StudentCard key={s.id} student={s} />)}
           </div>
-        </div>
-      )}
-
-      {onTrack.length > 0 && (
-        <div>
-          <SectionHead label="EM DIA" />
-          <div className="space-y-2">
-            {onTrack.map(s => <StudentCard key={s.id} student={s} />)}
-          </div>
-        </div>
+        )
+      ) : (
+        <>
+          {needsAttention.length > 0 && (
+            <div className="mb-5">
+              <SectionHead label="ATENÇÃO" />
+              <div className="space-y-2">
+                {needsAttention.map(s => <StudentCard key={s.id} student={s} urgent />)}
+              </div>
+            </div>
+          )}
+          {onTrack.length > 0 && (
+            <div>
+              <SectionHead label="EM DIA" />
+              <div className="space-y-2">
+                {onTrack.map(s => <StudentCard key={s.id} student={s} />)}
+              </div>
+            </div>
+          )}
+          {filtered.length === 0 && (
+            <div className="text-text-muted text-sm">Nenhum aluno ativo.</div>
+          )}
+        </>
       )}
     </div>
   )
