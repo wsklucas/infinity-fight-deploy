@@ -20,6 +20,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
     { href: '/instrutor/fichas', label: 'Fichas' },
     { href: '/instrutor/historico', label: 'Histórico' },
     { href: '/instrutor/agenda', label: 'Agenda' },
+    { href: '/instrutor/financeiro', label: 'Financeiro' },
     { href: '/instrutor/cadastros', label: 'Cadastros' },
   ]
 

@@ -83,6 +83,22 @@ export const sendFeedback = (student_id: string, text: string) =>
 export const getFeedbacks = (studentId: string) =>
   api.get(`/feedbacks/student/${studentId}`).then(r => r.data)
 
+// Finance
+export const getPayments = (month: number, year: number) =>
+  api.get('/finance/payments', { params: { month, year } }).then(r => r.data)
+export const createPayment = (data: { student_id: string; plan: string; amount: number; month: number; year: number }) =>
+  api.post('/finance/payments', data).then(r => r.data)
+export const togglePayment = (id: string) =>
+  api.patch(`/finance/payments/${id}/toggle`).then(r => r.data)
+export const getExpenses = (month: number, year: number) =>
+  api.get('/finance/expenses', { params: { month, year } }).then(r => r.data)
+export const createExpense = (data: { description: string; amount: number; month: number; year: number }) =>
+  api.post('/finance/expenses', data).then(r => r.data)
+export const getFinanceSummary = (month: number, year: number) =>
+  api.get('/finance/summary', { params: { month, year } }).then(r => r.data)
+export const getFinanceHistory = () =>
+  api.get('/finance/history').then(r => r.data)
+
 // Lessons
 export const getLessons = (params?: { from?: string; to?: string }) =>
   api.get('/lessons', { params }).then(r => r.data)
