@@ -16,11 +16,12 @@ model Academy {
   active    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  users      User[]
-  lessons    Lesson[]
-  payments   Payment[]
-  expenses   Expense[]
-  fichaItems FichaItem[]
+  users              User[]
+  lessons            Lesson[]
+  payments           Payment[]
+  expenses           Expense[]
+  fichaItems         FichaItem[]
+  intakeAssessments  IntakeAssessment[]
 
   @@map("academies")
 }
@@ -36,13 +37,14 @@ model User {
   active             Boolean        @default(true)
   createdAt          DateTime       @default(now()) @map("created_at")
   updatedAt          DateTime       @updatedAt @map("updated_at")
-  evaluations        Evaluation[]   @relation("InstructorEvaluations")
-  feedbacks          Feedback[]     @relation("InstructorFeedbacks")
+  evaluations        Evaluation[]      @relation("InstructorEvaluations")
+  feedbacks          Feedback[]        @relation("InstructorFeedbacks")
   refreshTokens      RefreshToken[]
-  instructorStudents Student[]      @relation("InstructorStudents")
+  instructorStudents Student[]         @relation("InstructorStudents")
   student            Student?
-  academy            Academy        @relation(fields: [academyId], references: [id])
-  instructorLessons  Lesson[]       @relation("InstructorLessons")
+  academy            Academy           @relation(fields: [academyId], references: [id])
+  instructorLessons  Lesson[]          @relation("InstructorLessons")
+  instructorIntakes  IntakeAssessment[] @relation("InstructorIntakes")
 
   @@map("users")
 }
@@ -71,13 +73,14 @@ model Student {
   maxStreak       Int          @default(0) @map("max_streak")
   createdAt       DateTime     @default(now()) @map("created_at")
   updatedAt       DateTime     @updatedAt @map("updated_at")
-  checkins        Checkin[]
-  evaluations     Evaluation[]
-  feedbacks       Feedback[]
-  instructor      User            @relation("InstructorStudents", fields: [instructorId], references: [id])
-  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lessonStudents  LessonStudent[]
-  payments        Payment[]
+  checkins          Checkin[]
+  evaluations       Evaluation[]
+  feedbacks         Feedback[]
+  instructor        User              @relation("InstructorStudents", fields: [instructorId], references: [id])
+  user              User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonStudents    LessonStudent[]
+  payments          Payment[]
+  intakeAssessments IntakeAssessment[]
 
   @@map("students")
 }
@@ -290,6 +293,24 @@ model LessonStudent {
 
   @@id([lessonId, studentId])
   @@map("lesson_students")
+}
+
+model IntakeAssessment {
+  id             String   @id @default(uuid())
+  academyId      String   @map("academy_id")
+  studentId      String   @map("student_id")
+  instructorId   String   @map("instructor_id")
+  resultSublevel String   @map("result_sublevel")
+  triageData     Json     @map("triage_data")
+  blockResults   Json     @map("block_results")
+  focusNotes     String?  @map("focus_notes")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  academy    Academy @relation(fields: [academyId], references: [id])
+  student    Student @relation(fields: [studentId], references: [id])
+  instructor User    @relation("InstructorIntakes", fields: [instructorId], references: [id])
+
+  @@map("intake_assessments")
 }
 
 enum FichaCategory {

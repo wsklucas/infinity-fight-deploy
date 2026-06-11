@@ -120,6 +120,17 @@ export const getSublevels = () => api.get('/sublevels').then(r => r.data)
 export const getSublevel = (id: string) => api.get(`/sublevels/${id}`).then(r => r.data)
 export const getFicha = (id: string) => api.get(`/sublevels/${id}/ficha`).then(r => r.data)
 
+// Intake
+export const submitIntakeAssessment = (data: {
+  studentId: string
+  triageData: Record<string, unknown>
+  blockResults: Array<{ sublevelId: string; criterionResults: Array<{ criterionId: string; state: string }> }>
+  focusNotes: string
+}) => api.post('/intake', data).then(r => r.data)
+
+export const getStudentIntake = (studentId: string) =>
+  api.get(`/intake/student/${studentId}`).then(r => r.data)
+
 // FichaItems (admin only)
 export const createFichaItem = (data: { sublevelId: string; category: string; title: string; description?: string }) =>
   api.post('/ficha-items', data).then(r => r.data)

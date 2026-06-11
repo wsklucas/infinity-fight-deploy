@@ -16,6 +16,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
 
   const navItems = [
     { href: '/instrutor', label: 'Alunos' },
+    { href: '/instrutor/ingresso', label: 'Ingresso' },
     { href: '/instrutor/avaliar', label: 'Avaliar' },
     { href: '/instrutor/fichas', label: 'Fichas' },
     { href: '/instrutor/historico', label: 'Histórico' },
