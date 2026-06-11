@@ -15,6 +15,7 @@ import feedbackRoutes from './routes/feedbacks'
 import sublevelRoutes from './routes/sublevels'
 import fichaItemRoutes from './routes/ficha-items'
 import intakeRoutes from './routes/intake'
+import historyRoutes from './routes/history'
 
 export const prisma = new PrismaClient()
 
@@ -71,6 +72,7 @@ server.register(feedbackRoutes, { prefix: '/api/v1/feedbacks' })
 server.register(sublevelRoutes, { prefix: '/api/v1/sublevels' })
 server.register(fichaItemRoutes, { prefix: '/api/v1/ficha-items' })
 server.register(intakeRoutes, { prefix: '/api/v1/intake' })
+server.register(historyRoutes, { prefix: '/api/v1/history' })
 
 server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }))
 
