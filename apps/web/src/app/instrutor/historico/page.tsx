@@ -59,7 +59,7 @@ const EVENT_CONFIG: Record<EventType, { label: string; bar: string; chip: string
   evaluation: {
     label: 'AVALIAÇÃO',
     bar: 'bg-amber-500',
-    chip: 'bg-amber-950/40 text-amber-400 border-amber-800/60',
+    chip: 'chip-avaliacao',
   },
   intake: {
     label: 'INGRESSO',

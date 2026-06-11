@@ -254,7 +254,7 @@ export default function FichasPage() {
                                         key={item.id}
                                         item={item}
                                         chipLabel="FIXAÇÃO"
-                                        chipClass="bg-orange-950/40 text-orange-400 border-orange-800/60"
+                                        chipClass="chip-fixacao"
                                         isAdmin={isAdmin}
                                         isFirst={idx === 0}
                                         isLast={idx === drills.length - 1}
@@ -292,7 +292,7 @@ export default function FichasPage() {
                                         key={item.id}
                                         item={item}
                                         chipLabel="TÁTICO"
-                                        chipClass="bg-sky-950/40 text-sky-400 border-sky-800/60"
+                                        chipClass="chip-tatico"
                                         isAdmin={isAdmin}
                                         isFirst={idx === 0}
                                         isLast={idx === jogos.length - 1}

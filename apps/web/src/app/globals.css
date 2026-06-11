@@ -4,17 +4,114 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
+/* ── Dark theme (default — no class required) ─────────────────────────────── */
 :root {
   color-scheme: dark;
+
+  --c-brand-red:         #C0392B;
+  --c-brand-red-dark:    #A93226;
+  --c-brand-red-dim:     #1A0808;
+  --c-brand-red-border:  #2A1010;
+
+  --c-surface-base:         #0C0C0C;
+  --c-surface-card:         #111111;
+  --c-surface-elevated:     #161616;
+  --c-surface-border:       #1E1E1E;
+  --c-surface-border-hover: #333333;
+
+  --c-text-primary:   #F0F0F0;
+  --c-text-secondary: #888888;
+  --c-text-muted:     #555555;
+  --c-text-hint:      #333333;
+
+  --c-state-mastered:          #22C55E;
+  --c-state-mastered-bg:       #081A08;
+  --c-state-mastered-border:   #102A10;
+  --c-state-developing:        #D97706;
+  --c-state-developing-bg:     #1A1400;
+  --c-state-developing-border: #2A2000;
+  --c-state-not-started:         #E57373;
+  --c-state-not-started-bg:      #1A0808;
+  --c-state-not-started-border:  #2A1010;
+
+  /* Hardcoded accent chips */
+  --c-chip-orange-bg:     rgb(120 53 15 / 40%);
+  --c-chip-orange-text:   #FB923C;
+  --c-chip-orange-border: rgb(154 52 18 / 60%);
+
+  --c-chip-sky-bg:        rgb(8 47 73 / 40%);
+  --c-chip-sky-text:      #38BDF8;
+  --c-chip-sky-border:    rgb(7 89 133 / 60%);
+
+  --c-chip-amber-bg:      rgb(69 26 3 / 40%);
+  --c-chip-amber-text:    #FBBF24;
+  --c-chip-amber-border:  rgb(146 64 14 / 60%);
 }
 
-body {
-  font-family: 'Inter', system-ui, sans-serif;
+/* ── Light theme (.light on <html>) ──────────────────────────────────────── */
+:root.light {
+  color-scheme: light;
+
+  --c-brand-red:         #C0392B;
+  --c-brand-red-dark:    #A93226;
+  --c-brand-red-dim:     #FEF2F2;
+  --c-brand-red-border:  #FECACA;
+
+  --c-surface-base:         #F3F4F6;
+  --c-surface-card:         #FFFFFF;
+  --c-surface-elevated:     #F9FAFB;
+  --c-surface-border:       #E5E7EB;
+  --c-surface-border-hover: #D1D5DB;
+
+  --c-text-primary:   #111111;
+  --c-text-secondary: #374151;
+  --c-text-muted:     #6B7280;
+  --c-text-hint:      #9CA3AF;
+
+  --c-state-mastered:          #16A34A;
+  --c-state-mastered-bg:       #F0FDF4;
+  --c-state-mastered-border:   #BBF7D0;
+  --c-state-developing:        #B45309;
+  --c-state-developing-bg:     #FFFBEB;
+  --c-state-developing-border: #FDE68A;
+  --c-state-not-started:         #DC2626;
+  --c-state-not-started-bg:      #FEF2F2;
+  --c-state-not-started-border:  #FECACA;
+
+  /* Hardcoded accent chips — light-mode overrides */
+  --c-chip-orange-bg:     #FFF7ED;
+  --c-chip-orange-text:   #9A3412;
+  --c-chip-orange-border: #FED7AA;
+
+  --c-chip-sky-bg:        #F0F9FF;
+  --c-chip-sky-text:      #0369A1;
+  --c-chip-sky-border:    #BAE6FD;
+
+  --c-chip-amber-bg:      #FFFBEB;
+  --c-chip-amber-text:    #92400E;
+  --c-chip-amber-border:  #FDE68A;
 }
+
+body { font-family: 'Inter', system-ui, sans-serif; }
 
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { scrollbar-width: none; }
+
+/* Chip helper classes (replaces hardcoded amber/orange/sky Tailwind colors) */
+.chip-fixacao {
+  background-color: var(--c-chip-orange-bg);
+  color:            var(--c-chip-orange-text);
+  border-color:     var(--c-chip-orange-border);
+}
+.chip-tatico {
+  background-color: var(--c-chip-sky-bg);
+  color:            var(--c-chip-sky-text);
+  border-color:     var(--c-chip-sky-border);
+}
+.chip-avaliacao {
+  background-color: var(--c-chip-amber-bg);
+  color:            var(--c-chip-amber-text);
+  border-color:     var(--c-chip-amber-border);
+}
