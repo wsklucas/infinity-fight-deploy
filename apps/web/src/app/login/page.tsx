@@ -74,11 +74,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <div className="mt-6 text-center text-xs text-text-muted">
-          <div>Instrutor: instrutor@infinityfight.com</div>
-          <div>Aluno: rafael@teste.com</div>
-          <div className="mt-1 opacity-50">Senha: instructor123 / aluno123</div>
-        </div>
       </div>
     </div>
   )
