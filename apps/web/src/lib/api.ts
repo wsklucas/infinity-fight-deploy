@@ -119,3 +119,15 @@ export const createInstructor = (data: { name: string; email: string; password: 
 export const getSublevels = () => api.get('/sublevels').then(r => r.data)
 export const getSublevel = (id: string) => api.get(`/sublevels/${id}`).then(r => r.data)
 export const getFicha = (id: string) => api.get(`/sublevels/${id}/ficha`).then(r => r.data)
+
+// FichaItems (admin only)
+export const createFichaItem = (data: { sublevelId: string; category: string; title: string; description?: string }) =>
+  api.post('/ficha-items', data).then(r => r.data)
+export const updateFichaItem = (id: string, data: { title?: string; description?: string | null; category?: string; sublevelId?: string }) =>
+  api.patch(`/ficha-items/${id}`, data).then(r => r.data)
+export const deleteFichaItem = (id: string) =>
+  api.delete(`/ficha-items/${id}`)
+export const duplicateFichaItem = (id: string, targetSublevelId: string) =>
+  api.patch(`/ficha-items/${id}/duplicate`, { targetSublevelId }).then(r => r.data)
+export const reorderFichaItems = (ids: string[]) =>
+  api.patch('/ficha-items/reorder', { ids }).then(r => r.data)

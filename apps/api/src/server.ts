@@ -13,6 +13,7 @@ import progressRoutes from './routes/progress'
 import checkinRoutes from './routes/checkins'
 import feedbackRoutes from './routes/feedbacks'
 import sublevelRoutes from './routes/sublevels'
+import fichaItemRoutes from './routes/ficha-items'
 
 export const prisma = new PrismaClient()
 
@@ -46,6 +47,17 @@ server.decorate('authenticateInstructor', async (request: any, reply: any) => {
   }
 })
 
+server.decorate('authenticateAdmin', async (request: any, reply: any) => {
+  try {
+    await request.jwtVerify()
+    if (request.user.role !== 'ADMIN') {
+      reply.status(403).send({ error: 'Forbidden — admin only' })
+    }
+  } catch {
+    reply.status(401).send({ error: 'Unauthorized' })
+  }
+})
+
 server.register(authRoutes, { prefix: '/api/v1/auth' })
 server.register(studentRoutes, { prefix: '/api/v1/students' })
 server.register(instructorRoutes, { prefix: '/api/v1/instructors' })
@@ -56,6 +68,7 @@ server.register(progressRoutes, { prefix: '/api/v1/progress' })
 server.register(checkinRoutes, { prefix: '/api/v1/checkins' })
 server.register(feedbackRoutes, { prefix: '/api/v1/feedbacks' })
 server.register(sublevelRoutes, { prefix: '/api/v1/sublevels' })
+server.register(fichaItemRoutes, { prefix: '/api/v1/ficha-items' })
 
 server.get('/health', async () => ({ status: 'ok', timestamp: new Date().toISOString() }))
 

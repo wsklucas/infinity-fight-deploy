@@ -16,10 +16,11 @@ model Academy {
   active    Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  users    User[]
-  lessons  Lesson[]
-  payments Payment[]
-  expenses Expense[]
+  users      User[]
+  lessons    Lesson[]
+  payments   Payment[]
+  expenses   Expense[]
+  fichaItems FichaItem[]
 
   @@map("academies")
 }
@@ -89,6 +90,7 @@ model Sublevel {
   order       Int
   criteria    Criterion[]
   evaluations Evaluation[]
+  fichaItems  FichaItem[]
 
   @@map("sublevels")
 }
@@ -288,4 +290,27 @@ model LessonStudent {
 
   @@id([lessonId, studentId])
   @@map("lesson_students")
+}
+
+enum FichaCategory {
+  TECNICA
+  DRILL_FIXACAO
+  JOGO_TATICO
+}
+
+model FichaItem {
+  id          String        @id @default(uuid())
+  academyId   String        @map("academy_id")
+  sublevelId  String        @map("sublevel_id")
+  category    FichaCategory
+  title       String
+  description String?
+  order       Int
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  academy  Academy  @relation(fields: [academyId], references: [id])
+  sublevel Sublevel @relation(fields: [sublevelId], references: [id])
+
+  @@map("ficha_items")
 }

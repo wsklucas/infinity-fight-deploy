@@ -1,4 +1,4 @@
-import { PrismaClient, Role, CriterionType, CriterionCategory } from '@prisma/client'
+import { PrismaClient, CriterionType, CriterionCategory, FichaCategory } from '@prisma/client'
 import bcrypt from 'bcryptjs'
 
 const prisma = new PrismaClient()
@@ -103,6 +103,40 @@ const CRITERIA: Array<{
   { sublevelId: '4C', type: 'COMPLEMENTARY', category: 'OBSERVABLE', text: 'Maturidade emocional: mantém postura em situação adversa', order: 5 },
 ]
 
+const FICHA_ITEMS: Array<{
+  sublevelId: string
+  category: FichaCategory
+  title: string
+  description: string
+  order: number
+}> = [
+  // 1A — Técnicas
+  { sublevelId: '1A', category: 'TECNICA', title: 'Guarda média neutra', description: 'Pés na largura dos ombros, joelhos semiflexionados, queixo abaixado.', order: 1 },
+  { sublevelId: '1A', category: 'TECNICA', title: 'Pivot de 45°', description: 'Sair da linha de ataque sem perder o equilíbrio.', order: 2 },
+  { sublevelId: '1A', category: 'TECNICA', title: 'Deslocamento lateral em quadrado', description: 'Movimentação nas 4 direções mantendo a base.', order: 3 },
+  { sublevelId: '1A', category: 'TECNICA', title: 'Jab direto', description: 'Extensão controlada sem levantar o ombro da guarda.', order: 4 },
+  // 1A — Drills
+  { sublevelId: '1A', category: 'DRILL_FIXACAO', title: 'Sombra no espelho', description: '3 × 2 min de sombra em frente ao espelho. Checklist: queixo abaixado, cotovelos baixos, peso nas pontas dos pés.', order: 1 },
+  { sublevelId: '1A', category: 'DRILL_FIXACAO', title: 'Parceiro corrijo', description: 'A lança jab; B observa e corrige postura após cada golpe. Trocar a cada 30 repetições.', order: 2 },
+  { sublevelId: '1A', category: 'DRILL_FIXACAO', title: 'Pivot + jab', description: 'A avança com jab; B pivota 45° e responde com jab. 3 séries de 20 repetições por lado.', order: 3 },
+  // 1A — Jogos
+  { sublevelId: '1A', category: 'JOGO_TATICO', title: 'Duelo de jabs', description: 'Apenas jabs permitidos. 3 rounds de 2 min. Vence quem tocar mais vezes mantendo postura correta.', order: 1 },
+  { sublevelId: '1A', category: 'JOGO_TATICO', title: 'Postura ganha pontos', description: 'Árbitro aponta quem perde a guarda. 1 ponto por break de postura. Menos pontos vence (90 s).', order: 2 },
+  // 2B — Técnicas
+  { sublevelId: '2B', category: 'TECNICA', title: 'Slip — esquiva lateral de cabeça', description: 'Esquiva lateral para jab e cross, mantendo equilíbrio.', order: 1 },
+  { sublevelId: '2B', category: 'TECNICA', title: 'Parry — desvio de mão', description: 'Desvio com a palma aberta, pronto para o contra-ataque.', order: 2 },
+  { sublevelId: '2B', category: 'TECNICA', title: 'Roll — giro de cabeça', description: 'Giro de cabeça para evitar gancho.', order: 3 },
+  { sublevelId: '2B', category: 'TECNICA', title: 'Bloqueio de chute médio', description: 'Elbow shield para chutes na altura do corpo.', order: 4 },
+  { sublevelId: '2B', category: 'TECNICA', title: 'Parry + cross imediato', description: 'Combinação defesa-contra: parry no jab e cross imediato sem pausa.', order: 5 },
+  // 2B — Drills
+  { sublevelId: '2B', category: 'DRILL_FIXACAO', title: 'Feed e slip', description: 'A lança jab; B faz slip e responde com cross. Alternar lados a cada 10 reps. 4 séries.', order: 1 },
+  { sublevelId: '2B', category: 'DRILL_FIXACAO', title: 'Parry + contra', description: 'A lança jab; B faz parry com mão direita e responde com cross imediato. 3 × 20 reps.', order: 2 },
+  { sublevelId: '2B', category: 'DRILL_FIXACAO', title: 'Combinação de defesas', description: 'A lança 1-2-3; B usa parry no 1, slip no 2 e bloqueio no 3. 4 séries de 10 reps.', order: 3 },
+  // 2B — Jogos
+  { sublevelId: '2B', category: 'JOGO_TATICO', title: 'Espelho de defesas', description: 'A inicia com qualquer golpe; B deve defender e espelhar a combinação de volta. 3 × 2 min.', order: 1 },
+  { sublevelId: '2B', category: 'JOGO_TATICO', title: 'Defenda ou pague (avançado)', description: 'Erro na defesa = 3 polichinelos e recomeça do zero. Foco em slip e parry. 4 × 90 s.', order: 2 },
+]
+
 async function main() {
   console.log('🌱 Seeding database...')
 
@@ -117,6 +151,21 @@ async function main() {
     },
   })
   console.log('✅ Academy created')
+
+  // Admin
+  const adminPwd = await bcrypt.hash('admin123', 10)
+  await prisma.user.upsert({
+    where: { email: 'admin@infinityfight.com' },
+    update: {},
+    create: {
+      academyId: academy.id,
+      name: 'Admin Infinity',
+      email: 'admin@infinityfight.com',
+      password: adminPwd,
+      role: 'ADMIN',
+    },
+  })
+  console.log('✅ Admin created')
 
   // Instructor
   const instructorPwd = await bcrypt.hash('instructor123', 10)
@@ -190,7 +239,19 @@ async function main() {
   }
   console.log('✅ Criteria created')
 
+  // FichaItems — seed only if none exist for this academy
+  const existingFichaItems = await prisma.fichaItem.count({ where: { academyId: academy.id } })
+  if (existingFichaItems === 0) {
+    await prisma.fichaItem.createMany({
+      data: FICHA_ITEMS.map(item => ({ ...item, academyId: academy.id })),
+    })
+    console.log('✅ FichaItems created')
+  } else {
+    console.log('⏭️  FichaItems already exist, skipping')
+  }
+
   console.log('\n🎉 Seed complete!')
+  console.log('📧 Admin:      admin@infinityfight.com / admin123')
   console.log('📧 Instructor: instrutor@infinityfight.com / instructor123')
   console.log('📧 Student:    rafael@teste.com / aluno123')
 }
