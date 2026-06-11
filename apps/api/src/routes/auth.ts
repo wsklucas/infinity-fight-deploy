@@ -82,4 +82,31 @@ export default async function authRoutes(fastify: FastifyInstance) {
     await prisma.refreshToken.deleteMany({ where: { token: refresh_token } })
     return { success: true }
   })
+
+  fastify.patch('/password', { onRequest: [(fastify as any).authenticate] }, async (request, reply) => {
+    const schema = z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(6, 'A nova senha deve ter no mínimo 6 caracteres'),
+    })
+
+    let body: { currentPassword: string; newPassword: string }
+    try {
+      body = schema.parse(request.body)
+    } catch (err: any) {
+      const msg = err.errors?.[0]?.message ?? 'Dados inválidos'
+      return reply.status(400).send({ error: msg })
+    }
+
+    const { id } = (request as any).user
+    const user = await prisma.user.findUnique({ where: { id } })
+    if (!user) return reply.status(404).send({ error: 'Usuário não encontrado' })
+
+    const valid = await bcrypt.compare(body.currentPassword, user.password)
+    if (!valid) return reply.status(400).send({ error: 'Senha atual incorreta' })
+
+    const hash = await bcrypt.hash(body.newPassword, 10)
+    await prisma.user.update({ where: { id }, data: { password: hash } })
+
+    return { success: true }
+  })
 }

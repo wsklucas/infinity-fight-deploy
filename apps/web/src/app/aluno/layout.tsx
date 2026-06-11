@@ -46,6 +46,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-text-muted">{user?.name?.split(' ')[0]}</span>
             <ThemeToggle />
+            <Link href="/aluno/conta" className="text-[10px] text-text-muted hover:text-text-primary transition-colors">Conta</Link>
             <button onClick={handleLogout} className="text-[10px] text-text-muted hover:text-brand-red">Sair</button>
           </div>
         </div>

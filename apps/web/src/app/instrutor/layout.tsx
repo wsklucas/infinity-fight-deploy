@@ -1,9 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../../store/auth'
 import { useTheme } from '../../store/theme'
-import { useRouter } from 'next/navigation'
 
 function ThemeToggle() {
   const { theme, toggle } = useTheme()
@@ -58,6 +57,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
           <div className="flex items-center gap-3">
             <span className="text-xs text-text-muted">{user?.name}</span>
             <ThemeToggle />
+            <Link href="/instrutor/conta" className="text-xs text-text-muted hover:text-text-primary transition-colors">Conta</Link>
             <button onClick={handleLogout} className="text-xs text-text-muted hover:text-brand-red transition-colors">Sair</button>
           </div>
         </div>

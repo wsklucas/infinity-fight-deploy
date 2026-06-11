@@ -135,6 +135,10 @@ export const submitIntakeAssessment = (data: {
 export const getStudentIntake = (studentId: string) =>
   api.get(`/intake/student/${studentId}`).then(r => r.data)
 
+// Account
+export const changePassword = (currentPassword: string, newPassword: string) =>
+  api.patch('/auth/password', { currentPassword, newPassword }).then(r => r.data)
+
 // FichaItems (admin only)
 export const createFichaItem = (data: { sublevelId: string; category: string; title: string; description?: string }) =>
   api.post('/ficha-items', data).then(r => r.data)
