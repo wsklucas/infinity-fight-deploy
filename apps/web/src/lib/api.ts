@@ -118,3 +118,4 @@ export const createInstructor = (data: { name: string; email: string; password: 
 // Sublevels
 export const getSublevels = () => api.get('/sublevels').then(r => r.data)
 export const getSublevel = (id: string) => api.get(`/sublevels/${id}`).then(r => r.data)
+export const getFicha = (id: string) => api.get(`/sublevels/${id}/ficha`).then(r => r.data)
