@@ -10,15 +10,15 @@ export default async function instructorRoutes(fastify: FastifyInstance) {
     const schema = z.object({
       name: z.string().min(2),
       email: z.string().email(),
-      password: z.string().min(6),
     })
-    const { name, email, password } = schema.parse(request.body)
+    const { name, email } = schema.parse(request.body)
 
     const existing = await prisma.user.findUnique({ where: { email } })
     if (existing) return reply.status(409).send({ error: 'Email already registered' })
 
+    const tmpPassword = Math.random().toString(36).slice(-8)
     const bcrypt = await import('bcryptjs')
-    const hashed = await bcrypt.hash(password, 10)
+    const hashed = await bcrypt.hash(tmpPassword, 10)
 
     const newUser = await prisma.user.create({
       data: {
@@ -27,11 +27,13 @@ export default async function instructorRoutes(fastify: FastifyInstance) {
         email,
         password: hashed,
         role: 'INSTRUCTOR',
+        mustChangePassword: true,
       },
     })
 
     return reply.status(201).send({
       user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
+      temp_password: tmpPassword,
     })
   })
 }

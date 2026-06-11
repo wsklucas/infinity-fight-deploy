@@ -112,7 +112,7 @@ export const deleteLesson = (id: string) =>
   api.delete(`/lessons/${id}`).then(r => r.data)
 
 // Instructors
-export const createInstructor = (data: { name: string; email: string; password: string }) =>
+export const createInstructor = (data: { name: string; email: string }) =>
   api.post('/instructors', data).then(r => r.data)
 
 // Sublevels
@@ -136,8 +136,14 @@ export const getStudentIntake = (studentId: string) =>
   api.get(`/intake/student/${studentId}`).then(r => r.data)
 
 // Account
+export const firstPassword = (newPassword: string) =>
+  api.patch('/auth/first-password', { newPassword }).then(r => r.data)
+
 export const changePassword = (currentPassword: string, newPassword: string) =>
   api.patch('/auth/password', { currentPassword, newPassword }).then(r => r.data)
+
+export const resetStudentPassword = (studentId: string) =>
+  api.patch(`/students/${studentId}/reset-password`).then(r => r.data)
 
 // FichaItems (admin only)
 export const createFichaItem = (data: { sublevelId: string; category: string; title: string; description?: string }) =>

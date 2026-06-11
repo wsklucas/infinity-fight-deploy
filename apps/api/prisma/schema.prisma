@@ -35,6 +35,7 @@ model User {
   role               Role
   avatarUrl          String?        @map("avatar_url")
   active             Boolean        @default(true)
+  mustChangePassword Boolean        @default(false) @map("must_change_password")
   createdAt          DateTime       @default(now()) @map("created_at")
   updatedAt          DateTime       @updatedAt @map("updated_at")
   evaluations        Evaluation[]      @relation("InstructorEvaluations")

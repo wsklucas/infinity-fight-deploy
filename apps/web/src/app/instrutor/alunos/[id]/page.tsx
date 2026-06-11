@@ -2,15 +2,19 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getStudent, getCurrentProgress, sendFeedback, updateStudentStatus } from '../../../../lib/api'
+import { getStudent, getCurrentProgress, sendFeedback, updateStudentStatus, resetStudentPassword } from '../../../../lib/api'
+import { useAuth } from '../../../../store/auth'
 
 export default function StudentProfile({ params }: { params: { id: string } }) {
   const router = useRouter()
+  const { user: authUser } = useAuth()
+  const isAdmin = authUser?.role === 'ADMIN'
   const [student, setStudent] = useState<any>(null)
   const [progress, setProgress] = useState<any>(null)
   const [feedback, setFeedback] = useState('')
   const [sending, setSending] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
+  const [resetModal, setResetModal] = useState<string | null>(null)
 
   useEffect(() => {
     getStudent(params.id).then(d => setStudent(d))
@@ -36,6 +40,16 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
     setFeedback('')
     setSending(false)
     getStudent(params.id).then(d => setStudent(d))
+  }
+
+  const handleResetPassword = async () => {
+    if (!window.confirm(`Resetar senha de ${student?.student?.user?.name}? Uma senha temporária será gerada.`)) return
+    try {
+      const data = await resetStudentPassword(params.id)
+      setResetModal(data.temp_password)
+    } catch {
+      alert('Erro ao resetar senha')
+    }
   }
 
   if (!student) return <div className="text-text-muted text-sm">Carregando...</div>
@@ -127,7 +141,7 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
       <button
         onClick={handleToggleStatus}
         disabled={togglingStatus}
-        className={`w-full text-xs font-medium py-2.5 rounded-lg mb-5 transition-colors disabled:opacity-50 ${
+        className={`w-full text-xs font-medium py-2.5 rounded-lg transition-colors disabled:opacity-50 ${
           s.user.active === false
             ? 'bg-state-mastered-bg border border-state-mastered-border text-state-mastered hover:opacity-80'
             : 'bg-surface-card border border-surface-border text-brand-red hover:bg-brand-red-dim'
@@ -135,6 +149,41 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
       >
         {togglingStatus ? 'Aguarde...' : s.user.active === false ? 'Reativar aluno' : 'Inativar aluno'}
       </button>
+
+      {isAdmin && (
+        <button
+          onClick={handleResetPassword}
+          className="w-full mt-2 mb-5 text-xs font-medium py-2.5 rounded-lg bg-surface-card border border-surface-border text-text-muted hover:text-text-primary transition-colors"
+        >
+          Resetar senha
+        </button>
+      )}
+
+      {resetModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface-card border border-surface-border rounded-xl p-6 max-w-sm w-full">
+            <div className="text-xs font-medium tracking-widest text-state-mastered mb-3">SENHA RESETADA</div>
+            <p className="text-xs text-text-secondary mb-3">
+              Repasse esta senha temporária ao aluno. Ele precisará trocá-la no primeiro acesso.
+            </p>
+            <div className="bg-surface-base border border-surface-border rounded-lg px-4 py-3 mb-4 flex items-center justify-between gap-3">
+              <span className="text-base font-mono font-medium text-text-primary">{resetModal}</span>
+              <button
+                onClick={() => { navigator.clipboard.writeText(resetModal); }}
+                className="text-[10px] text-brand-red hover:underline flex-shrink-0"
+              >
+                Copiar
+              </button>
+            </div>
+            <button
+              onClick={() => setResetModal(null)}
+              className="w-full bg-brand-red text-white text-xs font-medium py-2.5 rounded-lg hover:bg-brand-red-dark transition-colors"
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
 
       {student.last_feedback && (
         <div className="bg-state-mastered-bg border border-state-mastered-border rounded-xl p-3.5 mb-4">

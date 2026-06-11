@@ -8,6 +8,7 @@ interface User {
   email: string
   role: 'INSTRUCTOR' | 'STUDENT' | 'ADMIN'
   academy: string
+  mustChangePassword: boolean
 }
 
 interface AuthState {
@@ -16,6 +17,7 @@ interface AuthState {
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   hydrate: () => void
+  clearMustChangePassword: () => void
 }
 
 export const useAuth = create<AuthState>((set, get) => ({
@@ -43,5 +45,13 @@ export const useAuth = create<AuthState>((set, get) => ({
     Cookies.remove('refresh_token')
     localStorage.removeItem('user')
     set({ user: null })
+  },
+
+  clearMustChangePassword: () => {
+    const current = get().user
+    if (!current) return
+    const updated = { ...current, mustChangePassword: false }
+    localStorage.setItem('user', JSON.stringify(updated))
+    set({ user: updated })
   },
 }))

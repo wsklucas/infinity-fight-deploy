@@ -1,4 +1,5 @@
 'use client'
+import { useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '../../store/auth'
@@ -29,6 +30,10 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (user?.mustChangePassword) router.replace('/primeiro-acesso')
+  }, [user, router])
 
   const handleLogout = async () => {
     await logout()

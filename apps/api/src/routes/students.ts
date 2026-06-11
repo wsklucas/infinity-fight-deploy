@@ -73,6 +73,7 @@ export default async function studentRoutes(fastify: FastifyInstance) {
         email,
         password: hashed,
         role: 'STUDENT',
+        mustChangePassword: true,
       },
     })
 
@@ -84,6 +85,21 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     })
 
     return reply.status(201).send({ student, temp_password: tmpPassword })
+  })
+
+  fastify.patch('/:id/reset-password', { onRequest: [(fastify as any).authenticateAdmin] }, async (request, reply) => {
+    const { id } = request.params as any
+    const student = await prisma.student.findUnique({ where: { id } })
+    if (!student) return reply.status(404).send({ error: 'Student not found' })
+
+    const tmpPassword = Math.random().toString(36).slice(-8)
+    const bcrypt = await import('bcryptjs')
+    const hashed = await bcrypt.hash(tmpPassword, 10)
+    await prisma.user.update({
+      where: { id: student.userId },
+      data: { password: hashed, mustChangePassword: true },
+    })
+    return { temp_password: tmpPassword }
   })
 
   fastify.patch('/:id/status', { onRequest: [authenticateInstructor] }, async (request, reply) => {

@@ -18,7 +18,8 @@ export default function LoginPage() {
     try {
       await login(email, password)
       const user = useAuth.getState().user
-      if (user?.role === 'STUDENT') router.push('/aluno')
+      if (user?.mustChangePassword) router.push('/primeiro-acesso')
+      else if (user?.role === 'STUDENT') router.push('/aluno')
       else router.push('/instrutor')
     } catch {
       setError('Email ou senha incorretos')

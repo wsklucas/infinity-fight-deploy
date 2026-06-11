@@ -51,6 +51,7 @@ export default async function authRoutes(fastify: FastifyInstance) {
         email: user.email,
         role: user.role,
         academy: user.academy.name,
+        mustChangePassword: user.mustChangePassword,
       },
     }
   })
@@ -80,6 +81,23 @@ export default async function authRoutes(fastify: FastifyInstance) {
     const schema = z.object({ refresh_token: z.string() })
     const { refresh_token } = schema.parse(request.body)
     await prisma.refreshToken.deleteMany({ where: { token: refresh_token } })
+    return { success: true }
+  })
+
+  fastify.patch('/first-password', { onRequest: [(fastify as any).authenticate] }, async (request, reply) => {
+    const schema = z.object({
+      newPassword: z.string().min(6, 'A nova senha deve ter no mínimo 6 caracteres'),
+    })
+    let body: { newPassword: string }
+    try {
+      body = schema.parse(request.body)
+    } catch (err: any) {
+      const msg = err.errors?.[0]?.message ?? 'Dados inválidos'
+      return reply.status(400).send({ error: msg })
+    }
+    const { id } = (request as any).user
+    const hash = await bcrypt.hash(body.newPassword, 10)
+    await prisma.user.update({ where: { id }, data: { password: hash, mustChangePassword: false } })
     return { success: true }
   })
 

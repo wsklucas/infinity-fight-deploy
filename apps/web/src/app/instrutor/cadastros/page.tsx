@@ -83,22 +83,20 @@ function StudentForm() {
 function InstructorForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState<{ name: string; temp_password: string } | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    setSuccess(false)
+    setSuccess(null)
     setLoading(true)
     try {
-      await createInstructor({ name, email, password })
-      setSuccess(true)
+      const data = await createInstructor({ name, email })
+      setSuccess({ name, temp_password: data.temp_password })
       setName('')
       setEmail('')
-      setPassword('')
     } catch (err: any) {
       setError(err.response?.data?.error ?? 'Erro ao cadastrar professor')
     } finally {
@@ -125,19 +123,14 @@ function InstructorForm() {
           required
           className="w-full bg-surface-base border border-surface-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-red"
         />
-        <input
-          type="password"
-          value={password}
-          onChange={e => setPassword(e.target.value)}
-          placeholder="Senha (mín. 6 caracteres)"
-          required
-          minLength={6}
-          className="w-full bg-surface-base border border-surface-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-brand-red"
-        />
         {error && <p className="text-xs text-brand-red">{error}</p>}
         {success && (
           <div className="bg-state-mastered-bg border border-state-mastered-border rounded-lg px-4 py-3">
-            <p className="text-xs text-state-mastered font-medium">Professor cadastrado com sucesso!</p>
+            <p className="text-xs text-state-mastered font-medium mb-1">Professor cadastrado com sucesso!</p>
+            <p className="text-[11px] text-text-muted">
+              Senha temporária de <span className="font-medium text-text-primary">{success.name}</span>:
+            </p>
+            <p className="text-sm font-mono font-medium text-text-primary mt-1">{success.temp_password}</p>
           </div>
         )}
         <button
