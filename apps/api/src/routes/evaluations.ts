@@ -70,6 +70,20 @@ export default async function evaluationRoutes(fastify: FastifyInstance) {
     }
   })
 
+  fastify.post('/:id/save', { onRequest: [authenticateInstructor] }, async (request, reply) => {
+    const { id } = request.params as any
+
+    const evaluation = await prisma.evaluation.findUnique({ where: { id } })
+    if (!evaluation) return reply.status(404).send({ error: 'Evaluation not found' })
+
+    await prisma.evaluation.update({
+      where: { id },
+      data: { status: 'COMPLETED', result: 'MAINTAINED' },
+    })
+
+    return { success: true }
+  })
+
   fastify.post('/:id/advance', { onRequest: [authenticateInstructor] }, async (request, reply) => {
     const { id } = request.params as any
 

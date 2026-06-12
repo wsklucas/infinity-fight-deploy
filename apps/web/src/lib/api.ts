@@ -44,6 +44,7 @@ export const logout = (refresh_token: string) =>
   api.post('/auth/logout', { refresh_token })
 
 // Students
+export const getMyStudent = () => api.get('/students/me').then(r => r.data)
 export const getStudents = (status?: 'active' | 'inactive') =>
   api.get('/students', { params: status ? { status } : undefined }).then(r => r.data)
 export const getStudent = (id: string) => api.get(`/students/${id}`).then(r => r.data)
@@ -59,6 +60,8 @@ export const createEvaluation = (data: { student_id: string; sublevel_id: string
   api.post('/evaluations', data).then(r => r.data)
 export const updateEvaluationItems = (id: string, items: any[]) =>
   api.patch(`/evaluations/${id}/items`, { items }).then(r => r.data)
+export const saveEvaluation = (id: string) =>
+  api.post(`/evaluations/${id}/save`).then(r => r.data)
 export const confirmAdvance = (id: string) =>
   api.post(`/evaluations/${id}/advance`).then(r => r.data)
 export const getStudentEvaluations = (studentId: string) =>

@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../../store/auth'
-import { getStudentProgress } from '../../../lib/api'
+import { getMyStudent, getStudentProgress } from '../../../lib/api'
 
 const LEVEL_LABELS: Record<number, string> = {
   1: 'Fundamentos', 2: 'Técnico', 3: 'Tático', 4: 'Competidor'
@@ -18,10 +18,13 @@ export default function ProgressaoPage() {
 
   useEffect(() => {
     if (!user) return
-    getStudentProgress(user.id).then(d => {
-      setSublevels(d.sublevels)
-      setCurrent(d.current_sublevel)
-    })
+    // Get Student ID from /students/me (user.id alone is the User ID, not Student ID)
+    getMyStudent()
+      .then(d => getStudentProgress(d.student.id))
+      .then(d => {
+        setSublevels(d.sublevels)
+        setCurrent(d.current_sublevel)
+      })
   }, [user])
 
   const byLevel = [1, 2, 3, 4].map(l => ({

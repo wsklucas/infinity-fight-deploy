@@ -1,15 +1,13 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { createEvaluation, updateEvaluationItems, confirmAdvance, getSublevel } from '../../../lib/api'
-import { useAuth } from '../../../store/auth'
+import { createEvaluation, updateEvaluationItems, saveEvaluation, confirmAdvance, getSublevel } from '../../../lib/api'
 
 type State = 'MASTERED' | 'DEVELOPING' | 'NOT_STARTED'
 
 function EvaluationContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { user } = useAuth()
   const studentId = searchParams.get('student') ?? ''
   const sublevelId = searchParams.get('sublevel') ?? ''
 
@@ -18,6 +16,7 @@ function EvaluationContent() {
   const [states, setStates] = useState<Record<string, State>>({})
   const [result, setResult] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [advancing, setAdvancing] = useState(false)
 
   useEffect(() => {
@@ -36,11 +35,21 @@ function EvaluationContent() {
   const setItemState = async (criterionId: string, state: State) => {
     const newStates = { ...states, [criterionId]: state }
     setStates(newStates)
-
     if (!evalId) return
     const items = Object.entries(newStates).map(([criterion_id, st]) => ({ criterion_id, state: st }))
     const res = await updateEvaluationItems(evalId, items)
     setResult(res)
+  }
+
+  const handleSave = async () => {
+    if (!evalId) return
+    setSaving(true)
+    try {
+      await saveEvaluation(evalId)
+      router.push(`/instrutor/alunos/${studentId}`)
+    } finally {
+      setSaving(false)
+    }
   }
 
   const handleAdvance = async () => {
@@ -96,28 +105,40 @@ function EvaluationContent() {
         ))}
       </div>
 
+      {/* Result summary (only when all answered) */}
       {result && allAnswered && (
-        <div className="mb-4">
-          <div className={`border-l-2 rounded-r-xl p-3 mb-3 text-xs leading-relaxed ${result.can_advance ? 'bg-state-mastered-bg border-state-mastered text-green-300' : 'bg-brand-red-dim border-brand-red text-red-300'}`}>
-            {result.can_advance
-              ? `Bloqueadores ok · ${result.complementary_ni} complementar(es) pendente(s). Aluno apto para avançar.`
-              : result.reason === 'blocker_not_started'
-                ? `${result.blocker_ni} bloqueador(es) não iniciado(s). Manter no subnível atual.`
-                : `${result.complementary_ni} complementares não iniciados. Manter no subnível atual.`
-            }
-          </div>
+        <div className={`border-l-2 rounded-r-xl p-3 mb-3 text-xs leading-relaxed ${result.can_advance ? 'bg-state-mastered-bg border-state-mastered text-green-300' : 'bg-brand-red-dim border-brand-red text-red-300'}`}>
+          {result.can_advance
+            ? `Bloqueadores ok · ${result.complementary_ni} complementar(es) pendente(s). Aluno apto para avançar.`
+            : result.reason === 'blocker_not_started'
+              ? `${result.blocker_ni} bloqueador(es) não iniciado(s). Manter no subnível atual.`
+              : `${result.complementary_ni} complementares não iniciados. Manter no subnível atual.`
+          }
+        </div>
+      )}
 
-          <div className="bg-brand-red-dim border border-brand-red-border rounded-xl p-4 border-t-2 border-t-brand-red">
-            <div className="text-sm font-medium mb-1">Liberar avanço</div>
-            <div className="text-xs text-text-muted mb-3">O app calcula automaticamente quando o aluno pode avançar.</div>
+      {/* Action buttons — always show Save when at least one criterion answered */}
+      {done > 0 && (
+        <div className="space-y-2">
+          {/* Confirm advance — only when all answered and can_advance */}
+          {allAnswered && result?.can_advance && (
             <button
               onClick={handleAdvance}
-              disabled={!result.can_advance || advancing}
-              className="w-full bg-brand-red hover:bg-brand-red-dark disabled:bg-surface-border disabled:text-text-hint text-white text-xs font-medium py-3 rounded-lg transition-colors"
+              disabled={advancing || saving}
+              className="w-full bg-brand-red hover:bg-brand-red-dark disabled:opacity-50 text-white text-xs font-medium py-3 rounded-lg transition-colors"
             >
-              {advancing ? 'Confirmando...' : result.can_advance ? 'Confirmar avanço' : 'Critérios insuficientes'}
+              {advancing ? 'Confirmando...' : 'Confirmar avanço'}
             </button>
-          </div>
+          )}
+
+          {/* Save as maintained — always available */}
+          <button
+            onClick={handleSave}
+            disabled={saving || advancing}
+            className="w-full bg-surface-card border border-surface-border hover:border-surface-border-hover text-text-secondary text-xs font-medium py-3 rounded-lg transition-colors disabled:opacity-50"
+          >
+            {saving ? 'Salvando...' : allAnswered && result?.can_advance ? 'Salvar sem avançar' : 'Salvar avaliação'}
+          </button>
         </div>
       )}
     </div>

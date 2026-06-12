@@ -27,9 +27,31 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     return { students, total: students.length }
   })
 
+  // Must be registered before /:id to avoid 'me' being matched as an ID
+  fastify.get('/me', { onRequest: [authenticate] }, async (request, reply) => {
+    const { id: userId } = (request as any).user
+
+    const student = await prisma.student.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { id: true, name: true, email: true, avatarUrl: true, active: true } },
+        instructor: { select: { id: true, name: true } },
+        feedbacks: { orderBy: { createdAt: 'desc' }, take: 5 },
+        checkins: { orderBy: { date: 'desc' }, take: 30 },
+      },
+    })
+
+    if (!student) return reply.status(404).send({ error: 'Student not found' })
+
+    return {
+      student,
+      streak: student.currentStreak,
+      last_feedback: student.feedbacks[0] ?? null,
+    }
+  })
+
   fastify.get('/:id', { onRequest: [authenticate] }, async (request, reply) => {
     const { id } = request.params as any
-    const user = (request as any).user
 
     const student = await prisma.student.findUnique({
       where: { id },
@@ -115,7 +137,7 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     return { ok: true, active }
   })
 
-  fastify.patch('/:id', { onRequest: [authenticateInstructor] }, async (request, reply) => {
+  fastify.patch('/:id', { onRequest: [authenticateInstructor] }, async (request) => {
     const { id } = request.params as any
     const schema = z.object({
       style_tags: z.array(z.string()).optional(),

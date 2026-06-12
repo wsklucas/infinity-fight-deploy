@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../store/auth'
-import { getStudent, getCurrentProgress, checkin as doCheckin } from '../../lib/api'
+import { getMyStudent, getCurrentProgress, checkin as doCheckin } from '../../lib/api'
 
 export default function StudentDashboard() {
   const { user } = useAuth()
@@ -13,10 +13,15 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     if (!user) return
-    Promise.all([
-      getStudent(user.id).then(d => setStudent(d)),
-      getCurrentProgress(user.id).then(d => setProgress(d)),
-    ]).finally(() => setLoading(false))
+    // Step 1: get student record (by userId from JWT via /students/me)
+    getMyStudent()
+      .then(d => {
+        setStudent(d)
+        // Step 2: use the Student ID (not User ID) for progress
+        return getCurrentProgress(d.student.id)
+      })
+      .then(d => setProgress(d))
+      .finally(() => setLoading(false))
   }, [user])
 
   const handleCheckin = async () => {
