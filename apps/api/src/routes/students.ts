@@ -109,6 +109,26 @@ export default async function studentRoutes(fastify: FastifyInstance) {
     return reply.status(201).send({ student, temp_password: tmpPassword })
   })
 
+  fastify.delete('/:id', { onRequest: [authenticateInstructor] }, async (request, reply) => {
+    const { id } = request.params as any
+
+    const student = await prisma.student.findUnique({ where: { id } })
+    if (!student) return reply.status(404).send({ error: 'Student not found' })
+
+    // Delete in dependency order. EvaluationItems cascade from Evaluation.
+    // Checkins, Feedbacks, LessonStudents cascade from Student.
+    // RefreshTokens cascade from User.
+    await prisma.$transaction([
+      prisma.evaluation.deleteMany({ where: { studentId: id } }),
+      prisma.intakeAssessment.deleteMany({ where: { studentId: id } }),
+      prisma.payment.deleteMany({ where: { studentId: id } }),
+      prisma.student.delete({ where: { id } }),
+      prisma.user.delete({ where: { id: student.userId } }),
+    ])
+
+    return { success: true }
+  })
+
   fastify.patch('/:id/reset-password', { onRequest: [(fastify as any).authenticateAdmin] }, async (request, reply) => {
     const { id } = request.params as any
     const student = await prisma.student.findUnique({ where: { id } })

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getStudent, getCurrentProgress, sendFeedback, updateStudentStatus, resetStudentPassword } from '../../../../lib/api'
+import { getStudent, getCurrentProgress, sendFeedback, updateStudentStatus, resetStudentPassword, deleteStudent } from '../../../../lib/api'
 import { useAuth } from '../../../../store/auth'
 
 export default function StudentProfile({ params }: { params: { id: string } }) {
@@ -15,6 +15,8 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
   const [sending, setSending] = useState(false)
   const [togglingStatus, setTogglingStatus] = useState(false)
   const [resetModal, setResetModal] = useState<string | null>(null)
+  const [deleteModal, setDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     getStudent(params.id).then(d => setStudent(d))
@@ -40,6 +42,18 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
     setFeedback('')
     setSending(false)
     getStudent(params.id).then(d => setStudent(d))
+  }
+
+  const handleDelete = async () => {
+    setDeleting(true)
+    try {
+      await deleteStudent(params.id)
+      router.push('/instrutor')
+    } catch {
+      alert('Erro ao excluir aluno')
+      setDeleting(false)
+      setDeleteModal(false)
+    }
   }
 
   const handleResetPassword = async () => {
@@ -153,10 +167,46 @@ export default function StudentProfile({ params }: { params: { id: string } }) {
       {isAdmin && (
         <button
           onClick={handleResetPassword}
-          className="w-full mt-2 mb-5 text-xs font-medium py-2.5 rounded-lg bg-surface-card border border-surface-border text-text-muted hover:text-text-primary transition-colors"
+          className="w-full mt-2 text-xs font-medium py-2.5 rounded-lg bg-surface-card border border-surface-border text-text-muted hover:text-text-primary transition-colors"
         >
           Resetar senha
         </button>
+      )}
+
+      <button
+        onClick={() => setDeleteModal(true)}
+        className="w-full mt-2 mb-5 text-xs font-medium py-2.5 rounded-lg bg-brand-red/10 border border-brand-red/40 text-brand-red hover:bg-brand-red/20 transition-colors"
+      >
+        Excluir aluno permanentemente
+      </button>
+
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface-card border border-brand-red/40 rounded-xl p-6 max-w-sm w-full">
+            <div className="text-xs font-medium tracking-widest text-brand-red mb-3">EXCLUSÃO PERMANENTE</div>
+            <p className="text-sm font-medium text-text-primary mb-2">{s.user.name}</p>
+            <p className="text-xs text-text-secondary mb-3 leading-relaxed">
+              Esta ação apagará <strong className="text-text-primary">todo o histórico do aluno</strong>: avaliações, cobranças, progressão, check-ins, feedbacks e a conta de acesso.
+            </p>
+            <p className="text-xs text-brand-red font-medium mb-5">Esta ação é irreversível e não pode ser desfeita.</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteModal(false)}
+                disabled={deleting}
+                className="flex-1 border border-surface-border text-text-muted text-xs py-2.5 rounded-lg hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 bg-brand-red text-white text-xs font-medium py-2.5 rounded-lg hover:bg-brand-red-dark transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Excluindo...' : 'Sim, excluir definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {resetModal && (

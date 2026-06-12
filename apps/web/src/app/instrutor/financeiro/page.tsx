@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import {
-  getPayments, createPayment, togglePayment,
+  getPayments, createPayment, togglePayment, deletePayment,
   getExpenses, createExpense,
   getFinanceSummary, getFinanceHistory,
   getStudents,
@@ -76,6 +76,8 @@ function MensalidadesTab({ month, year, onNav }: { month: number; year: number; 
   const [showForm, setShowForm] = useState(false)
   const [form, setForm] = useState<{ student_id: string; plan: PlanKey; amount: number }>({ student_id: '', plan: 'MENSALIDADE', amount: 180 })
   const [saving, setSaving] = useState(false)
+  const [deleteModal, setDeleteModal] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   const reload = () => {
     setLoading(true)
@@ -89,6 +91,20 @@ function MensalidadesTab({ month, year, onNav }: { month: number; year: number; 
   useEffect(() => { reload() }, [month, year])
 
   const handleToggle = async (id: string) => { await togglePayment(id); reload() }
+
+  const handleDeletePayment = async () => {
+    if (!deleteModal) return
+    setDeleting(true)
+    try {
+      await deletePayment(deleteModal)
+      setDeleteModal(null)
+      reload()
+    } catch {
+      alert('Erro ao excluir cobrança')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault(); setSaving(true)
@@ -187,8 +203,44 @@ function MensalidadesTab({ month, year, onNav }: { month: number; year: number; 
                 className={`text-[9px] font-medium px-2.5 py-1.5 rounded-lg border transition-opacity hover:opacity-70 flex-shrink-0 ${p.paid ? 'bg-state-mastered-bg text-state-mastered border-state-mastered-border' : 'bg-brand-red-dim text-brand-red border-brand-red-border'}`}>
                 {p.paid ? 'PAGO' : 'PENDENTE'}
               </button>
+              <button
+                onClick={() => setDeleteModal(p.id)}
+                title="Excluir cobrança"
+                className="text-text-hint hover:text-brand-red transition-colors flex-shrink-0 p-1"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                </svg>
+              </button>
             </div>
           ))}
+        </div>
+      )}
+
+      {deleteModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-surface-card border border-surface-border rounded-xl p-6 max-w-sm w-full">
+            <div className="text-xs font-medium tracking-widest text-brand-red mb-3">EXCLUIR COBRANÇA</div>
+            <p className="text-xs text-text-secondary mb-5">
+              Tem certeza que deseja excluir esta cobrança? Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeleteModal(null)}
+                disabled={deleting}
+                className="flex-1 border border-surface-border text-text-muted text-xs py-2.5 rounded-lg hover:text-text-primary transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeletePayment}
+                disabled={deleting}
+                className="flex-1 bg-brand-red text-white text-xs font-medium py-2.5 rounded-lg hover:bg-brand-red-dark transition-colors disabled:opacity-50"
+              >
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

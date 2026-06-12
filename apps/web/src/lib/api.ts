@@ -54,6 +54,8 @@ export const updateStudent = (id: string, data: any) =>
   api.patch(`/students/${id}`, data).then(r => r.data)
 export const updateStudentStatus = (id: string, active: boolean) =>
   api.patch(`/students/${id}/status`, { active }).then(r => r.data)
+export const deleteStudent = (id: string) =>
+  api.delete(`/students/${id}`).then(r => r.data)
 
 // Evaluations
 export const createEvaluation = (data: { student_id: string; sublevel_id: string; type: string }) =>
@@ -94,6 +96,8 @@ export const createPayment = (data: { student_id: string; plan: string; amount: 
   api.post('/finance/payments', data).then(r => r.data)
 export const togglePayment = (id: string) =>
   api.patch(`/finance/payments/${id}/toggle`).then(r => r.data)
+export const deletePayment = (id: string) =>
+  api.delete(`/finance/payments/${id}`).then(r => r.data)
 export const getExpenses = (month: number, year: number) =>
   api.get('/finance/expenses', { params: { month, year } }).then(r => r.data)
 export const createExpense = (data: { description: string; amount: number; month: number; year: number }) =>

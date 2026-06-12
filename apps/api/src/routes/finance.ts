@@ -74,6 +74,16 @@ export default async function financeRoutes(fastify: FastifyInstance) {
     return { payment }
   })
 
+  fastify.delete('/payments/:id', { onRequest: [authenticateInstructor] }, async (request, reply) => {
+    const { id } = request.params as any
+
+    const existing = await prisma.payment.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Payment not found' })
+
+    await prisma.payment.delete({ where: { id } })
+    return { success: true }
+  })
+
   fastify.get('/expenses', { onRequest: [authenticateInstructor] }, async (request) => {
     const user = (request as any).user
     const { month, year } = request.query as any
