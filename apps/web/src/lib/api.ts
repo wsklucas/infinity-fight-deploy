@@ -87,6 +87,7 @@ export const getFeedbacks = (studentId: string) =>
   api.get(`/feedbacks/student/${studentId}`).then(r => r.data)
 
 // Finance
+export const getMyPayments = () => api.get('/finance/my-payments').then(r => r.data)
 export const getPayments = (month: number, year: number) =>
   api.get('/finance/payments', { params: { month, year } }).then(r => r.data)
 export const createPayment = (data: { student_id: string; plan: string; amount: number; month: number; year: number }) =>

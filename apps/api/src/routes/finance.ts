@@ -7,7 +7,26 @@ const studentInclude = {
 }
 
 export default async function financeRoutes(fastify: FastifyInstance) {
+  const authenticate = (fastify as any).authenticate
   const authenticateInstructor = (fastify as any).authenticateInstructor
+
+  // Student's own payments — looks up Student by userId from JWT
+  fastify.get('/my-payments', { onRequest: [authenticate] }, async (request, reply) => {
+    const { id: userId } = (request as any).user
+
+    const student = await prisma.student.findUnique({ where: { userId } })
+    if (!student) return reply.status(404).send({ error: 'Student not found' })
+
+    const payments = await prisma.payment.findMany({
+      where: { studentId: student.id },
+      orderBy: [{ year: 'desc' }, { month: 'desc' }],
+    })
+
+    const totalPaid = payments.filter(p => p.paid).reduce((s, p) => s + p.amount, 0)
+    const totalPending = payments.filter(p => !p.paid).reduce((s, p) => s + p.amount, 0)
+
+    return { payments, totalPaid, totalPending }
+  })
 
   fastify.get('/payments', { onRequest: [authenticateInstructor] }, async (request) => {
     const user = (request as any).user

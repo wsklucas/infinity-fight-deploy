@@ -60,6 +60,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             { href: '/aluno', label: 'Início' },
             { href: '/aluno/progressao', label: 'Progressão' },
             { href: '/aluno/agenda', label: 'Agenda' },
+            { href: '/aluno/financeiro', label: 'Cobranças' },
           ].map(item => (
             <Link key={item.href} href={item.href} className={`px-5 py-3 text-xs border-b-2 transition-colors ${pathname === item.href ? 'text-text-primary border-brand-red' : 'text-text-muted border-transparent hover:text-text-secondary'}`}>
               {item.label}
