@@ -149,6 +149,15 @@ export const changePassword = (currentPassword: string, newPassword: string) =>
 export const resetStudentPassword = (studentId: string) =>
   api.patch(`/students/${studentId}/reset-password`).then(r => r.data)
 
+// Academy settings
+export const getAcademySettings = () => api.get('/academy/settings').then(r => r.data)
+export const updateAcademySettings = (data: {
+  pixKey?: string | null
+  pixKeyType?: string | null
+  pixRecipientName?: string | null
+  pixBank?: string | null
+}) => api.patch('/academy/settings', data).then(r => r.data)
+
 // FichaItems (admin only)
 export const createFichaItem = (data: { sublevelId: string; category: string; title: string; description?: string }) =>
   api.post('/ficha-items', data).then(r => r.data)

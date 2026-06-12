@@ -49,6 +49,7 @@ export default function InstructorLayout({ children }: { children: React.ReactNo
     { href: '/instrutor/agenda', label: 'Agenda' },
     { href: '/instrutor/financeiro', label: 'Financeiro' },
     { href: '/instrutor/cadastros', label: 'Cadastros' },
+    ...(user?.role === 'ADMIN' ? [{ href: '/instrutor/ajustes', label: 'Ajustes' }] : []),
   ]
 
   return (

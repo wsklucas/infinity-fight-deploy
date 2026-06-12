@@ -12,10 +12,14 @@ model Academy {
   id        String   @id @default(uuid())
   name      String
   slug      String   @unique
-  plan      Plan     @default(FREE)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  plan             Plan     @default(FREE)
+  active           Boolean  @default(true)
+  pixKey           String?  @map("pix_key")
+  pixKeyType       String?  @map("pix_key_type")
+  pixRecipientName String?  @map("pix_recipient_name")
+  pixBank          String?  @map("pix_bank")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
   users              User[]
   lessons            Lesson[]
   payments           Payment[]
